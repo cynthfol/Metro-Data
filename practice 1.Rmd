@@ -1,0 +1,101 @@
+---
+title: "Untitled"
+author: "Cynthia Foley"
+date: "February 8, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+library(readxl)
+
+#####
+folderName='Data'
+fileName='cities.xlsx'
+fileExcel=file.path(folderName,fileName)
+dataFromExcel=read_excel(fileExcel,1) # table '1'
+str(dataFromExcel)
+dataFromExcel
+head(dataFromExcel,4) # shows first four rows
+dataFromExcel$city
+
+## Practice 1
+dataFromExcel[which.max(dataFromExcel$visits2015),] #most visited 2015
+
+##
+asiaOnly=dataFromExcel[(dataFromExcel$region=='Asia'),] #least visited in Asia 2013
+asiaOnly
+asiaOnly[which.min(asiaOnly$visits2013),] 
+
+##  3 least visited cities in Asia 2013
+asiaOnly=dataFromExcel[(dataFromExcel$region=='Asia'),] 
+asiaOnly
+visits2013=asiaOnly[order(asiaOnly$visits2013),]
+visits2013
+head(visits2013,3) # shows first three rows
+
+## most and least visited city in Asia in 2015
+asiaOnly
+asiaOnly[which.min(asiaOnly$visits2015),]
+asiaOnly[which.max(asiaOnly$visits2015),]
+
+## Practice 2 lOOPS
+dataFromExcel
+numRows=nrow(dataFromExcel)
+numCols=ncol(dataFromExcel)
+
+MostVisited2015=0
+for (visits2015 in dataFromExcel$visits2015){
+  if (MostVisited2015<visits2015){
+    MostVisited2015=visits2015
+  }
+}
+# Then:
+MostVisited2015
+
+dataFromExcel[(MostVisited2015$city)]
+
+# part 1
+
+MostVisited2015=0
+positionsOfMostVisits15=c()
+countMost=0
+for (position in 5:numRows){
+  visits2015 = dataFromExcel[position,'visits2015']
+  if (MostVisited2015<visits2015){
+    MostVisited2015=visits2015
+  }
+}
+MostVisited2015
+dataFromExcel[positionsOfMostVisits15]
+
+# part 2
+for (position in 1:numRows){
+  city = dataFromExcel[position,'ages']
+  if (oldestAge==age){
+    countOldest=countOldest+1
+    positionsOfOldest=c(positionsOfOldest,position)
+  }
+}
+
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
