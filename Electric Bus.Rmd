@@ -1,0 +1,371 @@
+---
+title: "eBus"
+author: "Cynthia Foley"
+date: "February 13, 2017"
+output: html_document
+---
+
+```{r setup}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(readxl)
+folderName='data'
+fileName='Electric Bus.xlsx'
+fileExcel=file.path(folderName,fileName)
+eBus=read_excel(fileExcel,1) # table '1'
+eBus=as.data.frame(eBus)
+head(eBus)
+```
+
+
+
+```{r , include=FALSE}
+str(eBus,width = 70, strict.width='cut')
+
+```
+
+```{r dim, include=FALSE}
+dim(eBus)
+```
+
+```{r names, include=FALSE}
+names(eBus)
+```
+
+
+```{r}
+columnPos=2
+for (var in names(eBus)[-c(1,15)]){
+  # print(columnPos)
+  # print(var)
+  print(table(eBus[,var]))
+  columnPos=columnPos+1
+}
+```
+
+
+
+```{r}
+eBus=eBus[,-15]
+```
+
+
+
+```{r levels, include=FALSE}
+
+toOrdinalFactor=function(aColumn,levelsInNumbers,labelsForLevels){
+  ordinalColumn=factor(aColumn,
+                       levels=levelsInNumbers,
+                       labels=labelsForLevels,
+                       ordered=T)
+  return(ordinalColumn)
+}
+
+```
+
+
+
+```{r Qaulity, include=FALSE}
+
+levelsInNumbers=c(1,2,3,4,5)
+labelsForLevels=c("Very unsatisfied","Unsatisfied", "Neutral", "Satisfied", "Very Satisfied")
+
+eBus[,c(5:12)]=lapply(eBus[,c(5:12)],
+                      toOrdinalFactor,levelsInNumbers,labelsForLevels)
+
+
+```
+
+```{r Bus Type, include=FALSE}
+
+levelsBusType=c(1,2,3)
+labelsBusType=c("Electric","Diesel", "Neither")
+
+eBus[,c(13)]=lapply(eBus[c(13)],
+                      toOrdinalFactor,levelsBusType,labelsBusType)
+```
+
+```{r}
+
+
+levelsRider=c(1,2,3,4)
+labelsRider=c("sixMonths","oneYear", "fiveYears", "longer")
+
+eBus[,c(14)]=lapply(eBus[c(14)],toOrdinalFactor,levelsRider,labelsRider)
+
+
+```
+
+```{r}
+write.csv(eBus,'Data/eBus.csv',row.names=F)
+eBus1=read.csv('Data/eBus.csv')
+str(eBus)
+
+save(eBus,file='Data/eBus.RData')
+
+
+load('Data/eBus.RData')
+
+#aggregate(eBus$,ebus$route)
+```
+
+
+```{r}
+table(eBus$Route)
+```
+
+```{r}
+levelsRoute=c(1,2,3,4)
+labelsForRoute=c("241","241W", "226", "226W")
+
+eBus[c(3)]=lapply(eBus[c(3)],
+                      toOrdinalFactor,levelsRoute,labelsForRoute)
+```
+
+```{r}
+eBus241=eBus[eBus$Route == '241','241W']
+#eBus226=eBus[eBus$Route>2,]
+
+
+
+```
+
+
+```{r column labels, include=FALSE}
+names(eBus)[4]='Language'
+names(eBus)[5]='Smoothness'
+names(eBus)[6]='Noise'
+names(eBus)[7]='Entry'
+names(eBus)[8]='Seat'
+names(eBus)[9]='Lighting'
+names(eBus)[10]='Temperature'
+names(eBus)[11]='Holds'
+names(eBus)[12]='RearSeats'
+names(eBus)[13]='Type'
+names(eBus)[14]='Rider'
+head(eBus)
+
+
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+print(eBus)
+
+```
+
+
+```{r}
+table(eBus[,13])
+
+legendPlot=levels(as.factor(eBus[,13]))
+bartable = table(eBus[,13])
+barplot(bartable, beside = ,legend=legendPlot) 
+```
+
+
+```{r}
+
+
+table(eBus$Smoothness$eBus226)
+
+legendPlot=levels(as.factor(eBus$Smoothness$eBus226))
+bartable = table(eBus$Smoothness$eBus226)
+barplot(bartable, beside = ,legend=legendPlot) 
+
+
+```
+
+```{r}
+
+table(eBus$Smoothness)
+
+legendPlot=levels(as.factor(eBus$Smoothness))
+bartable = table(eBus$Smoothness)
+barplot(bartable, beside = ,legend=legendPlot) 
+```
+
+
+
+table(eBus241$Smoothness)
+
+legendPlot=levels(as.factor(eBus241$Smoothness))
+bartable = table(eBus241$Smoothness)
+barplot(bartable, beside = ,legend=legendPlot)
+
+
+```{r}
+eBus$Type=as.factor(eBus$Type)
+
+var=eBus['Type']
+tail(sort(table(var)),1)
+
+1-tail(sort(prop.table(table(var))),1)
+barplot(table(var))
+```
+
+```{r}
+
+
+#install.packages("ggplot2")
+library(ggplot2)
+
+# preparing for the plot
+
+## all categories
+categories=names(table(var))  
+## colors to use (repeating the color n times)
+cols=rep('light green',length(categories))
+## together
+cat_cols=data.frame(categories,cols,stringsAsFactors = F)
+## modal category
+mode=names(tail(sort(table(var)),1))
+## update color of mode:
+cat_cols[cat_cols$categories==mode,]$cols='light blue'
+
+
+dataToPlot=eBus[!is.na(eBus$Type),]
+colToPlot=dataToPlot$Type
+
+# basic plot
+result = ggplot(dataToPlot,aes(colToPlot))+ geom_bar(fill=cat_cols$cols) 
+result
+
+result + labs(title="Bus Type Preference", x = 'Type', y='COUNT')
+
+```
+
+
+```{r}
+#install.packages("gmodels")
+library(gmodels)
+
+
+CrossTable(eBus$Route,eBus$Type,prop.t=T, prop.r=F, prop.c=F,prop.chisq=F)
+
+```
+
+
+```{r}
+legendPlot=levels(as.factor(unique(eBus$Route,eBus$Type)))
+bartable = table(eBus$Route,eBus$Type)  ## get the cross tab
+barplot(bartable, beside = TRUE,legend=legendPlot)  ## plot
+```
+
+
+
+```{r}
+library(maptools)
+folder="Data/transportation"
+fileName="routes.shp"
+fileSHP=file.path(folder,fileName) 
+busRoutes= readShapeSpatial(fileSHP) 
+```
+
+
+```{r}
+# this is spatial info
+head(busRoutes,10)
+# this is the data table:
+head(busRoutes@data,10)
+```
+
+
+```{r subsetroutes}
+busRoutes@data$RTE_NUM=as.character(busRoutes@data$RTE_NUM)
+
+```
+
+
+
+```{r}
+
+sub_busRoutes=busRoutes[busRoutes@data$RTE_NUM%in%c('241','226'),]
+```
+
+```{r}
+sub_routes241=busRoutes[busRoutes@data$RTE_NUM%in%c('241'),]
+```
+
+
+```{r}
+sub_routes226=busRoutes[busRoutes@data$RTE_NUM%in%c('226'),]
+```
+
+
+```{r}
+plot(sub_routes241)
+#q3 , medain=3
+plot(sub_routes241,lwd=3)
+title='Route 241'
+plot(sub_routes241, lwd=3, col = 'blue',main=title)
+
+```
+
+```{r}
+#q3 , medain=3
+plot(sub_routes226,lwd=3)
+title='Route 226'
+plot(sub_routes226, col = 'red',main=title)
+
+```
+#q3 , medain=3
+plot(sub_routes226,col='green',lwd=4)
+
+
+```{r}
+plot(sub_busRoutes)
+
+```
+
+```{r}
+sub_busRoutes =merge(sub_busRoutes,eBus,by.x='ROUTE',by.y='Type',all.x=T)
+```
+
+
+
+
+```{r}
+
+
+library(RColorBrewer)
+library(classInt)
+
+# 2. your input:
+varToPLot=sub_busRoutes@data$
+numberOfClasses = 3
+colorForScale='Reds'
+title='Electric Bus Routes'
+
+# 3. This does the job:
+colors <- brewer.pal(numberOfClasses, colorForScale)
+colorPallette <- findColours(intervals, colors)
+plot(sub_busRoutes, col = color,main=title)
+legend(241, 226, legend = names(attr(colorPallette, "table")), fill = attr(colorPallette, "palette"), cex = 1, bty = "n")
+
+```
+
+
+```
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
